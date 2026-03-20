@@ -1,0 +1,111 @@
+<!-- =====================================================================
+     TRMNL Surf Plugin — Liquid Templates
+     =====================================================================
+     Copy these into your TRMNL Private Plugin editor.
+     
+     1. buoy_card goes in the "Shared" section
+     2. Main markup goes in the "Markup" section
+     ===================================================================== -->
+
+
+<!-- =========================== SHARED: buoy_card ========================= -->
+
+{% template buoy_card %}
+  {% assign obj = obj %}
+  {% assign prev = prev %}
+  {% assign ago = ago %}
+  {% assign title = title %}
+  <div class="markdown" style="margin:0 0 6px 0; padding:0; font-size:20px; line-height:1;">
+    <span class="title" style="margin:0; padding:0;">{{ title }}</span>
+    {% if obj %}
+      {% if obj.h and obj.p and obj.d %}
+        <div style="margin:0; padding:0;">
+          <span class="value value--tnums" style="display:inline-block; vertical-align:baseline;">
+            {{ obj.h }}
+          </span>
+          <span class="label" style="margin-left:6px;">
+            ft @ {{ obj.p }} sec · {{ obj.d }}° ({{ obj.dc }}){% if obj.w %} · {{ obj.w }}°F{% endif %}
+          </span>
+        </div>
+      {% else %}
+        <div class="label">No recent data.</div>
+      {% endif %}
+      {% if prev %}
+        <div class="label" style="display:block !important; font-size:14px; margin:0; padding:0; line-height:1.4;">
+          Prev: {{ prev.h }} ft @ {{ prev.p }} sec · {{ prev.d }}° ({{ prev.dc }}){% if prev.w %} · {{ prev.w }}°F{% endif %}
+        </div>
+      {% endif %}
+      {% if ago %}
+        <div class="label" style="display:block !important; font-size:14px; margin:3px 0 0 0; padding:0; line-height:1.4;">
+          24h: {{ ago.h }} ft @ {{ ago.p }} sec · {{ ago.d }}° ({{ ago.dc }}){% if ago.w %} · {{ ago.w }}°F{% endif %}
+        </div>
+      {% endif %}
+      {% if obj.tt or prev.tt or ago.tt %}
+        <div class="label" style="display:block !important; font-size:12px; line-height:1; margin:6px 0 0 0; padding:0; text-align:left; white-space:nowrap; opacity:.6; font-style:italic;">
+          {% if obj.tt %}{{ obj.td }} {{ obj.tt }}{% endif %}{% if prev.tt %} · {% if prev.td != obj.td %}{{ prev.td }} {% endif %}{{ prev.tt }}{% endif %}{% if ago.tt %} · {% if ago.td != obj.td and ago.td != prev.td %}{{ ago.td }} {% endif %}{{ ago.tt }}{% endif %}
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="label">No recent data.</div>
+    {% endif %}
+  </div>
+{% endtemplate %}
+
+
+<!-- =========================== MAIN MARKUP =============================== -->
+<!--
+  Copy everything below this line into your plugin's Markup editor.
+  
+  If you changed the variable names in config.py STATIONS, update the
+  obj/prev/ago references below to match.
+-->
+
+<div class="layout layout--col" style="padding-left:6px; padding-top:8px; padding-bottom:8px;">
+  <div class="columns columns--2 gap--0">
+    <div class="column">
+      {% render "buoy_card", obj: harvest,  prev: harvest_prev,  ago: harvest_24h,  title: "Harvest (46218)" %}
+      {% render "buoy_card", obj: sm_basin, prev: sm_basin_prev, ago: sm_basin_24h, title: "SM Basin (46025)" %}
+    </div>
+    <div class="column">
+      {% render "buoy_card", obj: sm_bay,   prev: sm_bay_prev,   ago: sm_bay_24h,   title: "SM Bay (46221)" %}
+      {% render "buoy_card", obj: topanga,  prev: topanga_prev,  ago: topanga_24h,  title: "Topanga Near Shore (46268)" %}
+    </div>
+  </div>
+  <div class="divider" style="margin-top:6px;"></div>
+  {% if tide %}
+    <div class="markdown" style="text-align:center; margin:0; padding:0 0 8px 0;">
+      <div style="display:block; font-weight:700; font-size:28px; letter-spacing:2px; margin:1px 0 2px 0;">
+        GO SURFING
+      </div>
+      {% if wx %}
+        <div class="label" style="display:block !important; font-size:14px; margin:0; padding:0;">
+          Wind:
+          {% if wx.sp %}{{ wx.sp }} mph{% endif %}{% if wx.gs %} ({{ wx.gs }} g){% endif %}
+          {% if wx.dc %} · {{ wx.dc }}{% if wx.d %} ({{ wx.d }}°){% endif %}{% else %} · VRB{% endif %}
+          {% if wx.t %} · {{ wx.t }}{% endif %}
+        </div>
+      {% endif %}
+      {% assign tlist = tide.e | default: tide.events %}
+      {% if tlist and tlist.size > 0 %}
+        <div class="label" style="display:block !important; margin:0; padding:0; font-size:14px;">
+          {% for e in tlist %}
+            {% assign k = e.k | default: e.type %}
+            {% assign tt = e.t | default: e.time %}
+            {% assign vv = e.v | default: e.ft %}
+            {% if k == "H" %}High{% else %}Low{% endif %} {{ tt }} {{ vv }}′{% unless forloop.last %} || {% endunless %}
+          {% endfor %}
+        </div>
+      {% elsif tide.error %}
+        <div class="label" style="font-size:12px;">{{ tide.error }}</div>
+      {% else %}
+        <div class="label" style="font-size:12px;">No tide data.</div>
+      {% endif %}
+      <!-- Optional: Add your local swell window here. You can calculate
+           yours using the maps at https://stormsurf.com
+      <div class="label" style="display:block !important; font-size:12px; margin:0; padding:0;">
+        Your Beach swell window: X° to Y° with Z° to A° partially shadowed
+      </div>
+      -->
+    </div>
+  {% endif %}
+</div>
