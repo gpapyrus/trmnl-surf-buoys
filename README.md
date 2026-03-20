@@ -200,6 +200,9 @@ Make sure `TEMPEST_TOKEN` and `TEMPEST_STATION_ID` are set in `config.py`. If bo
 **Tide data missing:**
 Verify your tide station ID at [tidesandcurrents.noaa.gov](https://tidesandcurrents.noaa.gov). Some stations only have water level data, not predictions.
 
+**It always says "Go Surfing"**
+Not a bug. This is not a conditional message, because you do not need a conditional message to know that you should go surfing. 
+
 ## Data Sources
 
 - **Wave data:** [NOAA National Data Buoy Center (NDBC)](https://www.ndbc.noaa.gov/) — public, no API key needed
